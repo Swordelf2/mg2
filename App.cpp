@@ -74,6 +74,7 @@ int App::Init()
     return 0;
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void App::debugCallback(GLenum source,
         GLenum type,
         GLuint id,
@@ -85,3 +86,4 @@ void App::debugCallback(GLenum source,
     std::cerr << "OpenGL error occurred. Message: " << std::endl <<
         std::string(message, length) << std::endl;
 }
+#pragma GCC diagnostic pop

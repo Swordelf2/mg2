@@ -4,14 +4,18 @@ CFLAGS=-c -g -std=gnu++17 -Wall -Wextra
 LFLAGS=-lGL -lglfw -lGLEW
 
 OBJS=main.o \
-	 App.o
+	 App.o \
+	 graphics/Shader.o
 
-all: main
+TARGET=main
+
+
+all: $(TARGET)
 
 clean:
-	rm *.o main
+	rm $(OBJS) main
 
-main: $(OBJS)
+$(TARGET): $(OBJS)
 	$(LD) $(LFLAGS) $^ -o $@
 
 %.o: %.cpp

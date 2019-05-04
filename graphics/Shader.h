@@ -3,19 +3,26 @@
 
 #include <GL/glew.h>
 #include <string>
+#include <unordered_map>
 
 class Shader
 {
 public:
     Shader() = default;
+    ~Shader();
 
     void Load(const std::string &vertPath, const std::string &fragPath);
     void Use();
+    void Unuse();
+    bool IsUsed() const;
 
-    ~Shader();
-
+    GLint GetUniLocation(const std::string &uniName);
+    void SetUniform(const std::string &name, GLint val);
+    
 private:
-    GLuint id = 0;
+    GLuint                                                  m_id = 0;
+    std::unordered_map<std::string, int>                    m_uniLocation;
+    static Shader *                                         m_curUsed;
 
 private:
     static GLuint CompileShader(const std::string &source, GLenum type);

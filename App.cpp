@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "graphics/Shader.h"
+#include "graphics/Texture.h"
 
 int App::Execute()
 {
@@ -12,37 +13,80 @@ int App::Execute()
         return -1;
     }
 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
     /* Test code */
-    GLuint vao, vbo;
+    GLuint ibo, vao, vbo[3];
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
     GLfloat positions[] = {
+        0.5, 0.5,
+        -0.5, 0.5,
         -0.5, -0.5,
-        0.5, -0.5,
-        0.0, 0.5
+        0.5, -0.5
     };
 
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    GLfloat colors[] = {
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0,
+        1.0, 1.0, 0.0
+    };
 
+    GLfloat texCoords[] = {
+        1.0, 1.0,
+        0.0, 1.0,
+        0.0, 0.0,
+        1.0, 0.0
+    };
+
+    GLubyte indices[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    glGenBuffers(3, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
     glEnableVertexAttribArray(0);
 
-    shader.Load("graphics/shaders/test.vert", "graphics/shaders/test.frag");
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+    glEnableVertexAttribArray(2);
+
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glActiveTexture(GL_TEXTURE0);
+    Texture texture;
+    texture.Load("res/heart.png");
+    texture.Bind();
+    m_shader.Load("graphics/shaders/test.vert", "graphics/shaders/test.frag");
+    m_shader.SetUniform("my_sampler", 0);
+
+    glClearColor(1.0, 0.0, 1.0, 0.0);
     /* Test code ends here*/
 
-    while (running) {
+    while (m_running) {
         Update();
         Render();
 
-        if (glfwWindowShouldClose(window) == GL_TRUE) {
-            running = false;
+        if (glfwWindowShouldClose(m_window) == GL_TRUE) {
+            m_running = false;
         }
     }
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(m_window);
     glfwTerminate();
 
     return 0;
@@ -58,10 +102,10 @@ void App::Render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     /* Test code */
-    shader.Use();
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    m_shader.Use();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
 
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(m_window);
 }
 
 int App::Init()
@@ -76,15 +120,15 @@ int App::Init()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
+    m_window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!m_window)
     {
         glfwTerminate();
         return -1;
     }
 
     /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(m_window);
 
     /* Init GLEW */
     if (glewInit() != GLEW_OK) {
@@ -110,7 +154,9 @@ void App::debugCallback(GLenum source,
         const GLchar *message,
         const void *userParam)
 {
-    std::cerr << "OpenGL debug. Message: " << std::endl <<
-        std::string(message, length) << std::endl;
+    if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
+        std::cerr << "OpenGL debug. Message: " << std::endl <<
+            std::string(message, length) << std::endl;
+    }
 }
 #pragma GCC diagnostic pop

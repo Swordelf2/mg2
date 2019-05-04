@@ -22,10 +22,10 @@ private:
 
     
 private:
-    GLFWwindow *window;
-    bool running = true;
+    GLFWwindow *m_window;
+    bool m_running = true;
 
-    Shader shader;
+    Shader m_shader;
 
 
     static void APIENTRY debugCallback(GLenum source,

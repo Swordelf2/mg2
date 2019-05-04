@@ -1,11 +1,12 @@
 CC=g++
 LD=g++
 CFLAGS=-c -g -std=gnu++17 -Wall -Wextra
-LFLAGS=-lGL -lglfw -lGLEW -lSOIL
+LFLAGS=-lGL -lglfw -lGLEW -lpthread
 
 OBJS=main.o \
 	 App.o \
-	 graphics/Shader.o
+	 graphics/Shader.o \
+	 graphics/Texture.o \
 
 TARGET=main
 

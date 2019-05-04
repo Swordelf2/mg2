@@ -3,8 +3,12 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
+#include <utility>
 
 #include "Shader.h"
+
+Shader *Shader::m_curUsed = nullptr;
 
 void Shader::Load(const std::string &vertPath, const std::string &fragPath)
 {
@@ -30,17 +34,17 @@ void Shader::Load(const std::string &vertPath, const std::string &fragPath)
     vId = CompileShader(vCode, GL_VERTEX_SHADER);
     fId = CompileShader(fCode, GL_FRAGMENT_SHADER);
 
-    id = glCreateProgram();
+    m_id = glCreateProgram();
 
-    glAttachShader(id, vId);
-    glAttachShader(id, fId);
-    glLinkProgram(id);
+    glAttachShader(m_id, vId);
+    glAttachShader(m_id, fId);
+    glLinkProgram(m_id);
 
     GLint result;
-    glGetProgramiv(id, GL_LINK_STATUS, &result);
+    glGetProgramiv(m_id, GL_LINK_STATUS, &result);
     if (result != GL_TRUE) {
         char message[1024];
-        glGetProgramInfoLog(id, sizeof(message), nullptr, message);
+        glGetProgramInfoLog(m_id, sizeof(message), nullptr, message);
         std::cerr << "Failed to link shader: " << std::endl;
         std::cerr << vertPath << std::endl << fragPath << std::endl;
         std::cerr << message << std::endl;
@@ -53,14 +57,51 @@ void Shader::Load(const std::string &vertPath, const std::string &fragPath)
 
 Shader::~Shader()
 {
-    if (id) {
-        glDeleteProgram(id);
+    if (m_id) {
+        glDeleteProgram(m_id);
     }
 }
 
 void Shader::Use()
 {
-    glUseProgram(id);
+    if (!IsUsed()) {
+        glUseProgram(m_id);
+        m_curUsed = this;
+    }
+}
+
+void Shader::Unuse()
+{
+    if (IsUsed()) {
+        glUseProgram(0);
+        m_curUsed = nullptr;
+    }
+}
+
+bool Shader::IsUsed() const
+{
+    return m_curUsed == this;
+}
+
+GLint Shader::GetUniLocation(const std::string &uniName)
+{
+    if (auto it = m_uniLocation.find(uniName); it != m_uniLocation.end()) {
+        return it->second;
+    } else {
+        GLint location = glGetUniformLocation(m_id, uniName.c_str());
+        if (location == -1) {
+            std::cerr << "Could not find uniform: " << uniName << std::endl;
+        } else {
+            m_uniLocation.insert({uniName, location});
+        }
+        return location;
+    }
+}
+
+void Shader::SetUniform(const std::string &uniName, GLint val)
+{
+    Use();
+    glUniform1i(GetUniLocation(uniName), val);
 }
 
 GLuint Shader::CompileShader(const std::string& source, GLenum type)

@@ -7,14 +7,18 @@
 class Shader
 {
 public:
-    Shader(const std::string &vertPath, const std::string &fragPath);
+    Shader() = default;
 
+    void Load(const std::string &vertPath, const std::string &fragPath);
     void Use();
 
     ~Shader();
 
 private:
-    static GLuint CompileShader(const std::string &source, GLenum type);
+    GLuint id = 0;
 
-}
+private:
+    static GLuint CompileShader(const std::string &source, GLenum type);
+};
+
 #endif

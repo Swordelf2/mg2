@@ -1,3 +1,5 @@
 cscope.out
 *.o
 main
+.vscode
+log

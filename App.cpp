@@ -4,12 +4,34 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "graphics/Shader.h"
 
 int App::Execute()
 {
     if (Init() == -1) {
         return -1;
     }
+
+    /* Test code */
+    GLuint vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLfloat positions[] = {
+        -0.5, -0.5,
+        0.5, -0.5,
+        0.0, 0.5
+    };
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    shader.Load("graphics/shaders/test.vert", "graphics/shaders/test.frag");
+    /* Test code ends here*/
 
     while (running) {
         Update();
@@ -34,6 +56,11 @@ void App::Update()
 void App::Render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    /* Test code */
+    shader.Use();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     glfwSwapBuffers(window);
 }
 
@@ -83,7 +110,7 @@ void App::debugCallback(GLenum source,
         const GLchar *message,
         const void *userParam)
 {
-    std::cerr << "OpenGL error occurred. Message: " << std::endl <<
+    std::cerr << "OpenGL debug. Message: " << std::endl <<
         std::string(message, length) << std::endl;
 }
 #pragma GCC diagnostic pop

@@ -1,8 +1,12 @@
 #include <GL/glew.h>
 
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
 #include "Shader.h"
 
-Shader::Shader(const std::string &vertPath, const std::string &fragPath)
+void Shader::Load(const std::string &vertPath, const std::string &fragPath)
 {
     std::string vCode, fCode;
     std::ifstream vFile, fFile;
@@ -49,7 +53,9 @@ Shader::Shader(const std::string &vertPath, const std::string &fragPath)
 
 Shader::~Shader()
 {
-    glDeleteProgram(id);
+    if (id) {
+        glDeleteProgram(id);
+    }
 }
 
 void Shader::Use()

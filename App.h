@@ -1,7 +1,10 @@
 #ifndef APP_H
 #define APP_H
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include "graphics/Shader.h"
 
 class App
 {
@@ -21,6 +24,8 @@ private:
 private:
     GLFWwindow *window;
     bool running = true;
+
+    Shader shader;
 
 
     static void APIENTRY debugCallback(GLenum source,

@@ -1,7 +1,7 @@
 CC=g++
 LD=g++
 CFLAGS=-c -g -std=gnu++17 -Wall -Wextra
-LFLAGS=-lGL -lglfw -lGLEW
+LFLAGS=-lGL -lglfw -lGLEW -lSOIL
 
 OBJS=main.o \
 	 App.o \

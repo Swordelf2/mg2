@@ -5,6 +5,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <utility>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
 
@@ -102,6 +104,12 @@ void Shader::SetUniform(const std::string &uniName, GLint val)
 {
     Use();
     glUniform1i(GetUniLocation(uniName), val);
+}
+
+void Shader::SetUniform(const std::string &uniName, const glm::mat4 &val)
+{
+    Use();
+    glUniformMatrix4fv(GetUniLocation(uniName), 1, GL_FALSE, glm::value_ptr(val));
 }
 
 GLuint Shader::CompileShader(const std::string& source, GLenum type)

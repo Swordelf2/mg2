@@ -7,9 +7,11 @@ layout (location = 2) in vec2 texCoord;
 out vec3 fragColor;
 out vec2 fragTexCoord;
 
+uniform mat4 fullTransform;
+
 void main()
 {
     fragColor = color;
     fragTexCoord = texCoord;
-    gl_Position = vec4(pos.xy, 0.0, 1.0);
+    gl_Position = fullTransform * vec4(pos.xy, 0.0, 1.0);
 }

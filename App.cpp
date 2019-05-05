@@ -7,6 +7,13 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <cmath>
+
 int App::Execute()
 {
     if (Init() == -1) {
@@ -15,6 +22,7 @@ int App::Execute()
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 
     /* Test code */
     GLuint ibo, vao, vbo[3];
@@ -74,7 +82,7 @@ int App::Execute()
     m_shader.Load("graphics/shaders/test.vert", "graphics/shaders/test.frag");
     m_shader.SetUniform("my_sampler", 0);
 
-    glClearColor(1.0, 0.0, 1.0, 0.0);
+    glClearColor(0.5, 0.5, 0.0, 1.0);
     /* Test code ends here*/
 
     while (m_running) {
@@ -99,10 +107,21 @@ void App::Update()
 
 void App::Render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Test code */
     m_shader.Use();
+    glm::mat4 fullTransform(1.0);
+    float cur_angle = 
+            static_cast<float>(std::sin(glfwGetTime()) * glm::radians(90.0));
+
+    fullTransform = glm::rotate(fullTransform,
+            cur_angle,
+            glm::vec3(0.0, 0.0, -1.0));
+    fullTransform = glm::translate(fullTransform, glm::vec3(-0.3, -0.3, 0.0));
+        
+    m_shader.SetUniform("fullTransform", fullTransform);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
 
     glfwSwapBuffers(m_window);

@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <string>
 #include <unordered_map>
+#include <glm/glm.hpp>
 
 class Shader
 {
@@ -18,6 +19,7 @@ public:
 
     GLint GetUniLocation(const std::string &uniName);
     void SetUniform(const std::string &name, GLint val);
+    void SetUniform(const std::string &name, const glm::mat4 &val);
     
 private:
     GLuint                                                  m_id = 0;

@@ -9,6 +9,11 @@
 
 #include "Texture.h"
 
+Texture::Texture(const std::string &path)
+{
+    Load(path);
+}
+
 void Texture::Load(const std::string &path)
 {
     int channels_num;
@@ -45,10 +50,12 @@ Texture::~Texture()
 
 void Texture::Bind()
 {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
 void Texture::Unbind()
 {
+    std::cerr << "Using Texture::Unbind()" << std::endl;
     glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -7,19 +7,22 @@
 class Texture
 {
 public:
-    Texture() = default;
+    Texture(const std::string &path);
     ~Texture();
 
-    void Load(const std::string &path);
 
     void Bind();
     void Unbind();
 
 
 private:
+    void Load(const std::string &path);
+
+private:
     int m_width;
     int m_height;
     GLuint m_id = 0;
+
 };
 
 #endif

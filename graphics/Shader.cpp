@@ -12,50 +12,10 @@
 
 Shader *Shader::m_curUsed = nullptr;
 
-void Shader::Load(const std::string &vertPath, const std::string &fragPath)
+Shader::Shader(const std::string &vertPath, const std::string &fragPath)
 {
-    std::string vCode, fCode;
-    std::ifstream vFile, fFile;
-    try {
-        vFile.open(vertPath);
-        fFile.open(fragPath);
-        std::stringstream vStream, fStream;
-        vStream << vFile.rdbuf();
-        fStream << fFile.rdbuf();
-        vFile.close();
-        fFile.close();
-        vCode = vStream.str();
-        fCode = fStream.str();
-    } catch (std::ifstream::failure &e) {
-        std::cerr << "Error while opening shader source file: " <<
-                std::endl;
-        std::cerr << e.what() << std::endl;
-    }
-
-    GLuint vId, fId;
-    vId = CompileShader(vCode, GL_VERTEX_SHADER);
-    fId = CompileShader(fCode, GL_FRAGMENT_SHADER);
-
-    m_id = glCreateProgram();
-
-    glAttachShader(m_id, vId);
-    glAttachShader(m_id, fId);
-    glLinkProgram(m_id);
-
-    GLint result;
-    glGetProgramiv(m_id, GL_LINK_STATUS, &result);
-    if (result != GL_TRUE) {
-        char message[1024];
-        glGetProgramInfoLog(m_id, sizeof(message), nullptr, message);
-        std::cerr << "Failed to link shader: " << std::endl;
-        std::cerr << vertPath << std::endl << fragPath << std::endl;
-        std::cerr << message << std::endl;
-    }
-
-    glDeleteShader(vId);
-    glDeleteShader(fId);
+    Load(vertPath, fragPath);
 }
-
 
 Shader::~Shader()
 {
@@ -110,6 +70,50 @@ void Shader::SetUniform(const std::string &uniName, const glm::mat4 &val)
 {
     Use();
     glUniformMatrix4fv(GetUniLocation(uniName), 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::Load(const std::string &vertPath, const std::string &fragPath)
+{
+    std::string vCode, fCode;
+    std::ifstream vFile, fFile;
+    try {
+        vFile.open(vertPath);
+        fFile.open(fragPath);
+        std::stringstream vStream, fStream;
+        vStream << vFile.rdbuf();
+        fStream << fFile.rdbuf();
+        vFile.close();
+        fFile.close();
+        vCode = vStream.str();
+        fCode = fStream.str();
+    } catch (std::ifstream::failure &e) {
+        std::cerr << "Error while opening shader source file: " <<
+                std::endl;
+        std::cerr << e.what() << std::endl;
+    }
+
+    GLuint vId, fId;
+    vId = CompileShader(vCode, GL_VERTEX_SHADER);
+    fId = CompileShader(fCode, GL_FRAGMENT_SHADER);
+
+    m_id = glCreateProgram();
+
+    glAttachShader(m_id, vId);
+    glAttachShader(m_id, fId);
+    glLinkProgram(m_id);
+
+    GLint result;
+    glGetProgramiv(m_id, GL_LINK_STATUS, &result);
+    if (result != GL_TRUE) {
+        char message[1024];
+        glGetProgramInfoLog(m_id, sizeof(message), nullptr, message);
+        std::cerr << "Failed to link shader: " << std::endl;
+        std::cerr << vertPath << std::endl << fragPath << std::endl;
+        std::cerr << message << std::endl;
+    }
+
+    glDeleteShader(vId);
+    glDeleteShader(fId);
 }
 
 GLuint Shader::CompileShader(const std::string& source, GLenum type)

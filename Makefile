@@ -7,6 +7,7 @@ OBJS=main.o \
 	 App.o \
 	 graphics/Shader.o \
 	 graphics/Texture.o \
+	 graphics/Mesh.o \
 
 TARGET=main
 

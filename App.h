@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "graphics/Shader.h"
+#include "graphics/Mesh.h"
 
 class App
 {
@@ -14,19 +15,23 @@ public:
 public:
     int Execute();
 
+public:
+    static double deltaTime;
+
 private:
     int Init();
     void Update();
     void Render();
-
-
     
 private:
-    GLFWwindow *m_window;
-    bool m_running = true;
+    int                                          m_screenWidth;
+    int                                          m_screenHeight;
+    GLFWwindow *                                 m_window;
+    bool                                         m_running = true;
+    double                                       m_prevTime;
 
-    Shader m_shader;
-
+    Mesh *                                       m_mesh;
+    Shader *                                     m_shader;
 
     static void APIENTRY debugCallback(GLenum source,
         GLenum type,

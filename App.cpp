@@ -4,15 +4,17 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <vector>
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
+#include "graphics/Mesh.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 #include <cmath>
+
+double App::deltaTime;
 
 int App::Execute()
 {
@@ -25,64 +27,31 @@ int App::Execute()
     glEnable(GL_DEPTH_TEST);
 
     /* Test code */
-    GLuint ibo, vao, vbo[3];
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    GLfloat positions[] = {
-        0.5, 0.5,
-        -0.5, 0.5,
-        -0.5, -0.5,
-        0.5, -0.5
+    std::vector<Vertex> vertices = {
+        // face 0
+        {{-1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{ 1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 1
+        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {1.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 2
+        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {0.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 3
+        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {0.5, 1.0}}
     };
 
-    GLfloat colors[] = {
-        1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 1.0,
-        1.0, 1.0, 0.0
-    };
+    Texture *texture = new Texture("res/container.jpg");
+    m_shader = new Shader("graphics/shaders/test.vert", "graphics/shaders/test.frag");
+    m_mesh = new Mesh(vertices, {}, texture, m_shader);
+    m_shader->SetUniform("my_sampler", 0);
 
-    GLfloat texCoords[] = {
-        1.0, 1.0,
-        0.0, 1.0,
-        0.0, 0.0,
-        1.0, 0.0
-    };
-
-    GLubyte indices[] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-
-    glGenBuffers(3, vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-    glEnableVertexAttribArray(2);
-
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glActiveTexture(GL_TEXTURE0);
-    Texture texture;
-    texture.Load("res/heart.png");
-    texture.Bind();
-    m_shader.Load("graphics/shaders/test.vert", "graphics/shaders/test.frag");
-    m_shader.SetUniform("my_sampler", 0);
-
-    glClearColor(0.5, 0.5, 0.0, 1.0);
+    glClearColor(0x1e / 255.0, 0x39 / 255.0, 0x63 / 255.0, 1.0);
     /* Test code ends here*/
 
     while (m_running) {
@@ -102,6 +71,11 @@ int App::Execute()
 
 void App::Update()
 {
+    /* Update deltatime */
+    double curTime = glfwGetTime();
+    deltaTime = curTime - m_prevTime;
+    m_prevTime = curTime;
+
     glfwPollEvents();
 }
 
@@ -110,19 +84,20 @@ void App::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Test code */
-    m_shader.Use();
-    glm::mat4 fullTransform(1.0);
-    float cur_angle = 
-            static_cast<float>(std::sin(glfwGetTime()) * glm::radians(90.0));
+    // projection
+    glm::mat4 t = glm::perspective(static_cast<float>(glm::radians(45.0)),
+            static_cast<float>(m_screenWidth) / m_screenHeight,
+            0.1f, 100.0f);
 
-    fullTransform = glm::rotate(fullTransform,
-            cur_angle,
-            glm::vec3(0.0, 0.0, -1.0));
-    fullTransform = glm::translate(fullTransform, glm::vec3(-0.3, -0.3, 0.0));
-        
-    m_shader.SetUniform("fullTransform", fullTransform);
+    // view
+    t = glm::translate(t, glm::vec3(0.0, 0.0, -6.0));
+    // transform
+    t = glm::translate(t, glm::vec3(std::sin(glfwGetTime()), 0.0, 0.0));
+    t = glm::rotate(t, static_cast<float>(glfwGetTime()),
+            glm::normalize(glm::vec3(0.0, 1.0, 0.0)));
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+    m_shader->SetUniform("fullTransform", t);
+    m_mesh->Draw();
 
     glfwSwapBuffers(m_window);
 }
@@ -139,7 +114,9 @@ int App::Init()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     /* Create a windowed mode window and its OpenGL context */
-    m_window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    m_screenWidth = 640;
+    m_screenHeight = 480;
+    m_window = glfwCreateWindow(m_screenWidth, m_screenHeight, "Hello World", NULL, NULL);
     if (!m_window)
     {
         glfwTerminate();
@@ -160,6 +137,8 @@ int App::Init()
     // Set the debug callback function
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(App::debugCallback, nullptr);
+
+    m_prevTime = glfwGetTime();
 
     return 0;
 }

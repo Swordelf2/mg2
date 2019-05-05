@@ -9,10 +9,9 @@
 class Shader
 {
 public:
-    Shader() = default;
+    Shader(const std::string &vertPath, const std::string &fragpath);
     ~Shader();
 
-    void Load(const std::string &vertPath, const std::string &fragPath);
     void Use();
     void Unuse();
     bool IsUsed() const;
@@ -22,12 +21,13 @@ public:
     void SetUniform(const std::string &name, const glm::mat4 &val);
     
 private:
+    void Load(const std::string &vertPath, const std::string &fragPath);
+    static GLuint CompileShader(const std::string &source, GLenum type);
+
+private:
     GLuint                                                  m_id = 0;
     std::unordered_map<std::string, int>                    m_uniLocation;
     static Shader *                                         m_curUsed;
-
-private:
-    static GLuint CompileShader(const std::string &source, GLenum type);
 };
 
 #endif

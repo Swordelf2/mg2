@@ -64,6 +64,5 @@ void Texture::Bind()
 
 void Texture::Unbind()
 {
-    std::cerr << "Using Texture::Unbind()" << std::endl;
     glBindTexture(GL_TEXTURE_2D, 0);
 }

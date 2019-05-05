@@ -73,6 +73,12 @@ void Shader::SetUniform(const std::string &uniName, GLint val)
     glUniform1i(GetUniLocation(uniName), val);
 }
 
+void Shader::SetUniform(const std::string &uniName, const glm::vec4 &val)
+{
+    Use();
+    glUniform4fv(GetUniLocation(uniName), 1, glm::value_ptr(val));
+}
+
 void Shader::SetUniform(const std::string &uniName, const glm::mat4 &val)
 {
     Use();

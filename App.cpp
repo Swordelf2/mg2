@@ -5,14 +5,19 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 #include "graphics/Mesh.h"
+#include "entities/HoverEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
+
 
 const App * App::app;
 
@@ -33,7 +38,7 @@ int App::Execute()
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    glClearColor(0x1e / 255.0, 0x39 / 255.0, 0x63 / 255.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
     while (m_running) {
         Update();
@@ -83,9 +88,8 @@ void App::Render()
             0.1f, 100.0f);
 
     // view
-    pv = glm::translate(pv, glm::vec3(0.0, 0.0, -6.0));
+    pv = glm::translate(pv, glm::vec3(0.0, 0.0, -15.0));
 
-    // transform
     for (Entity *entity : m_entities) {
         entity->Draw(pv);
     }
@@ -95,6 +99,8 @@ void App::Render()
 
 int App::Init()
 {
+    srand(time(nullptr));
+
     /* Initialize the library */
     if (!glfwInit())
         return -1;
@@ -105,8 +111,8 @@ int App::Init()
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     /* Create a windowed mode window and its OpenGL context */
-    m_screenWidth = 640;
-    m_screenHeight = 480;
+    m_screenWidth = 1200;
+    m_screenHeight = 720;
     m_window = glfwCreateWindow(m_screenWidth, m_screenHeight, "Hello World", NULL, NULL);
     if (!m_window)
     {
@@ -145,17 +151,53 @@ int App::Init()
 
 void App::InitEntities()
 {
-    // cube
-    Entity *entity = new Entity(&m_meshes[MESH_CUBE],
-            &m_shaders[SHADER_BASIC],
-            &m_textures[TEXTURE_PURPLE]);
-    m_entities.push_back(entity);
+    for (int i = 0; i < 10; ++i) {
+        Entity *entity = new HoverEntity(&m_meshes[MESH_TRIANGLE],
+                &m_shaders[SHADER_BASIC],
+                nullptr);
+        m_entities.push_back(entity);
+    }
+    for (int i = 0; i < 10; ++i) {
+        Entity *entity = new HoverEntity(&m_meshes[MESH_CUBE],
+                &m_shaders[SHADER_BASIC],
+                nullptr);
+        m_entities.push_back(entity);
+    }
+    for (int i = 0; i < 10; ++i) {
+        Entity *entity = new HoverEntity(&m_meshes[MESH_SQUARE],
+                &m_shaders[SHADER_BASIC],
+                nullptr);
+        m_entities.push_back(entity);
+    }
 }
 
 void App::InitMeshes()
 {
     std::vector<GLushort> emptyInds = {};
-    std::vector<Vertex> vertices = {
+    std::vector<Vertex> vertices;
+    std::vector<GLushort> inds;
+    // MESH_TRIANGLE
+    vertices = {
+        {{-1.0, -sqrt(3.0)/3.0, 0.0}, {0.0, 0.0}},
+        {{ 1.0, -sqrt(3.0)/3.0, 0.0}, {1.0, 0.0}},
+        {{ 0.0, 2.0 * sqrt(3.0)/3.0, 0.0}, {0.5, sqrt(3.0)/4.0}}
+    };
+    m_meshes.emplace_back(vertices, emptyInds);
+
+    // MESH_SQUARE
+    vertices = {
+        {{ 1.0,  1.0, 0.0}, {1.0, 1.0}},
+        {{-1.0,  1.0, 0.0}, {0.0, 1.0}},
+        {{-1.0, -1.0, 0.0}, {0.0, 0.0}},
+        {{ 1.0, -1.0, 0.0}, {1.0, 0.0}}
+    };
+    inds = {
+        0, 1, 2,
+        2, 3, 0
+    };
+    m_meshes.emplace_back(vertices, inds);
+
+    vertices = {
         {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
         {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}},
         {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
@@ -223,13 +265,18 @@ void App::InitMeshes()
 
 void App::InitShaders()
 {
-    m_shaders.emplace_back("graphics/shaders/test.vert", "graphics/shaders/test.frag");
-    m_shaders[0].SetUniform("texture0", 0);
+    m_shaders.emplace_back("graphics/shaders/basic.vert", "graphics/shaders/basic.frag");
 }
 
 void App::InitTextures()
 {
     m_textures.emplace_back("res/purple.jpg");
+}
+
+double App::GetRand(double l, double r)
+{
+    double d = rand() / (RAND_MAX + 1.0);
+    return l + (r - l) * d;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"

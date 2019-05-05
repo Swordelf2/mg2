@@ -20,6 +20,7 @@ public:
 
     GLint GetUniLocation(const std::string &uniName);
     void SetUniform(const std::string &name, GLint val);
+    void SetUniform(const std::string &name, const glm::vec4 &val);
     void SetUniform(const std::string &name, const glm::mat4 &val);
     
 private:

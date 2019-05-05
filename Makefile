@@ -9,6 +9,8 @@ OBJS=main.o \
 	 graphics/Texture.o \
 	 graphics/Mesh.o \
 	 graphics/Entity.o \
+	 entities/RotateEntity.o \
+	 entities/HoverEntity.o \
 
 TARGET=main
 

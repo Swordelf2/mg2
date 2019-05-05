@@ -9,6 +9,8 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
+#define M_PI           3.14159265358979323846
+
 class App
 {
 public:
@@ -22,6 +24,9 @@ public:
     double GetTime() const;
 public:
     static const App *                           app;
+
+public:
+    static double GetRand(double l, double r); // generated random value in [l, r)
 
 private:
     int Init();
@@ -43,7 +48,9 @@ private:
 
     // Meshes
     enum {
-        MESH_CUBE = 0
+        MESH_TRIANGLE = 0,
+        MESH_SQUARE,
+        MESH_CUBE
     };
     std::vector<Mesh>                            m_meshes;
     void InitMeshes();

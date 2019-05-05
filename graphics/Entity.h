@@ -16,9 +16,13 @@ public:
     virtual void Update();
     virtual void Draw(const glm::mat4 &pv) const;
 
-private:
+    void SetScale(const glm::vec3 &scale);
+
+protected:
     float                                           m_angle = 0.0;
+    glm::vec3                                       m_rotAxis = {0.0, 0.0, 1.0};
     glm::vec3                                       m_position = {0.0, 0.0, 0.0};
+    glm::vec3                                       m_scale = {1.0, 1.0, 1.0};
 
     Mesh *                                          m_mesh;
     Shader *                                        m_shader;

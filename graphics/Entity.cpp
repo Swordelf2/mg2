@@ -2,6 +2,7 @@
 #include "../App.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 Entity::Entity(Mesh *mesh, Shader *shader, Texture *texture) :
     m_mesh(mesh),
@@ -12,22 +13,26 @@ Entity::Entity(Mesh *mesh, Shader *shader, Texture *texture) :
 
 void Entity::Update()
 {
-    m_angle = sin(App::app->GetTime());
 }
 
 void Entity::Draw(const glm::mat4 &pv) const
 {
-    if (!m_mesh) {
+    if (!m_mesh || !m_shader) {
+        std::cerr << "Error: drawing without mesh or shader!" << std::endl;
         return;
     }
-    if (m_shader) {
-        glm::mat4 t = glm::translate(pv, m_position);
-        t = glm::rotate(pv, m_angle, glm::normalize(glm::vec3(1.0, 1.0, 1.0)));
-        m_shader->SetUniform("fullTransform", t);
-        m_shader->Use();
-    }
+    glm::mat4 t = glm::translate(pv, m_position);
+    t = glm::scale(t, m_scale);
+    t = glm::rotate(t, m_angle, m_rotAxis);
+    m_shader->SetUniform("fullTransform", t);
+    m_shader->Use();
     if (m_texture) {
         m_texture->Bind();
     }
     m_mesh->Draw();
+}
+
+void Entity::SetScale(const glm::vec3 &scale)
+{
+    m_scale = scale;
 }

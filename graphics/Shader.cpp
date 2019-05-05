@@ -17,6 +17,13 @@ Shader::Shader(const std::string &vertPath, const std::string &fragPath)
     Load(vertPath, fragPath);
 }
 
+Shader::Shader(Shader &&other) :
+    m_id(other.m_id),
+    m_uniLocation(other.m_uniLocation)
+{
+    other.m_id = 0;
+}
+
 Shader::~Shader()
 {
     if (m_id) {

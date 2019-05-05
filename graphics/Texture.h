@@ -8,8 +8,9 @@ class Texture
 {
 public:
     Texture(const std::string &path);
+    Texture(const Texture &other) = delete;
+    Texture(Texture &&other);
     ~Texture();
-
 
     void Bind();
     void Unbind();

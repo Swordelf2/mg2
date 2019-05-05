@@ -11,23 +11,21 @@
 class Mesh
 {
 public:
-    Mesh(const std::vector<Vertex> &vertices, const std::vector<GLushort> &indices,
-            Texture *texture = nullptr, Shader *shader = nullptr);
+    Mesh(const std::vector<Vertex> &vertices, const std::vector<GLushort> &indices);
+    Mesh(const Mesh &other) = delete;
+    Mesh(Mesh &&other);
     ~Mesh();
 
-    void Draw();
+    void Draw() const;
 
 private:
     void LoadVertices(const std::vector<Vertex> &vertices, const std::vector<GLushort> &indices);
 
 private:
-    GLuint                                      m_vao;
-    GLuint                                      m_vbo;
+    GLuint                                      m_vao = 0;
+    GLuint                                      m_vbo = 0;
     GLuint                                      m_ebo = 0;
     GLsizei                                     m_elCount;
-
-    Texture *                                   m_texture;
-    Shader *                                    m_shader;
 };
 
 #endif

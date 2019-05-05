@@ -14,6 +14,14 @@ Texture::Texture(const std::string &path)
     Load(path);
 }
 
+Texture::Texture(Texture &&other) :
+    m_width(other.m_width),
+    m_height(other.m_height),
+    m_id(other.m_id)
+{
+    other.m_id = 0;
+}
+
 void Texture::Load(const std::string &path)
 {
     int channels_num;

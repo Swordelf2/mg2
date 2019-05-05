@@ -1,9 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLushort> &indices,
-        Texture *texture, Shader *shader) :
-    m_texture(texture),
-    m_shader(shader)
+Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLushort> &indices)
 {
     if (indices.empty()) {
         m_elCount = vertices.size();
@@ -13,23 +10,30 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLushort> &ind
     LoadVertices(vertices, indices);
 }
 
+Mesh::Mesh(Mesh &&other) :
+    m_vao(other.m_vao),
+    m_vbo(other.m_vbo),
+    m_ebo(other.m_ebo),
+    m_elCount(other.m_elCount)
+{
+    other.m_vao = other.m_vbo = other.m_ebo = 0;
+}
+
 Mesh::~Mesh()
 {
     if (m_ebo) {
         glDeleteBuffers(1, &m_ebo);
     }
-    glDeleteBuffers(1, &m_vbo);
-    glDeleteVertexArrays(1, &m_vao);
+    if (m_vbo) {
+        glDeleteBuffers(1, &m_vbo);
+    }
+    if (m_vao) {
+        glDeleteVertexArrays(1, &m_vao);
+    }
 }
     
-void Mesh::Draw()
+void Mesh::Draw() const
 {
-    if (m_shader) {
-        m_shader->Use();
-    }
-    if (m_texture) {
-        m_texture->Bind();
-    }
     glBindVertexArray(m_vao);
     if (m_ebo) {
         glDrawElements(GL_TRIANGLES, m_elCount, GL_UNSIGNED_SHORT, nullptr);

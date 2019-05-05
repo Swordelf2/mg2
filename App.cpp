@@ -14,7 +14,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
 
-double App::deltaTime;
+const App * App::app;
+
+App::~App()
+{
+    for (Entity *entity : m_entities) {
+        delete entity;
+    }
+}
 
 int App::Execute()
 {
@@ -26,33 +33,7 @@ int App::Execute()
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    /* Test code */
-    std::vector<Vertex> vertices = {
-        // face 0
-        {{-1.0, -1.0,  1.0}, {0.0, 0.0}},
-        {{ 1.0, -1.0,  1.0}, {1.0, 0.0}},
-        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
-        //face 1
-        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
-        {{ 0.0, -1.0, -1.0}, {1.0, 0.0}},
-        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
-        //face 2
-        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
-        {{ 0.0, -1.0, -1.0}, {0.0, 0.0}},
-        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
-        //face 3
-        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
-        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
-        {{ 0.0, -1.0, -1.0}, {0.5, 1.0}}
-    };
-
-    Texture *texture = new Texture("res/container.jpg");
-    m_shader = new Shader("graphics/shaders/test.vert", "graphics/shaders/test.frag");
-    m_mesh = new Mesh(vertices, {}, texture, m_shader);
-    m_shader->SetUniform("my_sampler", 0);
-
     glClearColor(0x1e / 255.0, 0x39 / 255.0, 0x63 / 255.0, 1.0);
-    /* Test code ends here*/
 
     while (m_running) {
         Update();
@@ -69,13 +50,26 @@ int App::Execute()
     return 0;
 }
 
+double App::GetDeltaTime() const
+{
+    return m_deltaTime;
+}
+
+double App::GetTime() const
+{
+    return m_time;
+}
+
 void App::Update()
 {
     /* Update deltatime */
-    double curTime = glfwGetTime();
-    deltaTime = curTime - m_prevTime;
-    m_prevTime = curTime;
-
+    m_prevTime = m_time;
+    m_time = glfwGetTime();
+    m_deltaTime = m_time - m_prevTime;
+    
+    for (Entity *entity : m_entities) {
+        entity->Update();
+    }
     glfwPollEvents();
 }
 
@@ -83,21 +77,18 @@ void App::Render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /* Test code */
     // projection
-    glm::mat4 t = glm::perspective(static_cast<float>(glm::radians(45.0)),
+    glm::mat4 pv = glm::perspective(static_cast<float>(glm::radians(45.0)),
             static_cast<float>(m_screenWidth) / m_screenHeight,
             0.1f, 100.0f);
 
     // view
-    t = glm::translate(t, glm::vec3(0.0, 0.0, -6.0));
-    // transform
-    t = glm::translate(t, glm::vec3(std::sin(glfwGetTime()), 0.0, 0.0));
-    t = glm::rotate(t, static_cast<float>(glfwGetTime()),
-            glm::normalize(glm::vec3(0.0, 1.0, 0.0)));
+    pv = glm::translate(pv, glm::vec3(0.0, 0.0, -6.0));
 
-    m_shader->SetUniform("fullTransform", t);
-    m_mesh->Draw();
+    // transform
+    for (Entity *entity : m_entities) {
+        entity->Draw(pv);
+    }
 
     glfwSwapBuffers(m_window);
 }
@@ -138,9 +129,107 @@ int App::Init()
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(App::debugCallback, nullptr);
 
-    m_prevTime = glfwGetTime();
+    m_time = m_prevTime = glfwGetTime();
+    m_deltaTime = 0.0;
+
+    app = this;
+
+    InitMeshes();
+    InitShaders();
+    InitTextures();
+
+    InitEntities();
 
     return 0;
+}
+
+void App::InitEntities()
+{
+    // cube
+    Entity *entity = new Entity(&m_meshes[MESH_CUBE],
+            &m_shaders[SHADER_BASIC],
+            &m_textures[TEXTURE_PURPLE]);
+    m_entities.push_back(entity);
+}
+
+void App::InitMeshes()
+{
+    std::vector<GLushort> emptyInds = {};
+    std::vector<Vertex> vertices = {
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
+
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {0.0f, 1.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{-0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f, -0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
+
+        {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0f}},
+        {{0.5f,  0.5f, -0.5f},  {1.0f, 1.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{0.5f,  0.5f,  0.5f},  {1.0f, 0.0f}},
+        {{-0.5f,  0.5f,  0.5f},  {0.0f, 0.0f}},
+        {{-0.5f,  0.5f, -0.5f},  {0.0f, 1.0}}
+    };
+    m_meshes.emplace_back(vertices, emptyInds);
+
+    vertices = {
+        // face 0
+        {{-1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{ 1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 1
+        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {1.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 2
+        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {0.0, 0.0}},
+        {{ 0.0,  1.0,  0.0}, {0.5, 1.0}},
+        //face 3
+        {{ 1.0, -1.0,  1.0}, {0.0, 0.0}},
+        {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
+        {{ 0.0, -1.0, -1.0}, {0.5, 1.0}}
+    };
+    m_meshes.emplace_back(vertices, emptyInds);
+}
+
+void App::InitShaders()
+{
+    m_shaders.emplace_back("graphics/shaders/test.vert", "graphics/shaders/test.frag");
+    m_shaders[0].SetUniform("texture0", 0);
+}
+
+void App::InitTextures()
+{
+    m_textures.emplace_back("res/purple.jpg");
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"

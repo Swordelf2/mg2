@@ -10,6 +10,8 @@ class Shader
 {
 public:
     Shader(const std::string &vertPath, const std::string &fragpath);
+    Shader(const Shader &other) = delete;
+    Shader(Shader &&other);
     ~Shader();
 
     void Use();

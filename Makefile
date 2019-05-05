@@ -8,6 +8,7 @@ OBJS=main.o \
 	 graphics/Shader.o \
 	 graphics/Texture.o \
 	 graphics/Mesh.o \
+	 graphics/Entity.o \
 
 TARGET=main
 
@@ -15,7 +16,7 @@ TARGET=main
 all: $(TARGET)
 
 clean:
-	rm $(OBJS) main
+	rm -f $(OBJS) main
 
 $(TARGET): $(OBJS)
 	$(LD) $(LFLAGS) $^ -o $@

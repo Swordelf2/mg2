@@ -25,7 +25,7 @@ clean:
 	rm -f $(OBJS) main
 
 $(TARGET): $(OBJS)
-	$(LD) $(LFLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LFLAGS)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) $< -o $@

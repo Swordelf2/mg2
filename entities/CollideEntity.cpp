@@ -56,12 +56,13 @@ void CollideEntity::Collide(glm::vec3 otherPos)
         float angle = App::GetRand(glm::radians(-30.0), glm::radians(30.0));
         glm::mat4 t(1.0);
         t = glm::rotate(t, angle, glm::vec3(0.0, 0.0, 1.0));
-        glm::vec3 newDir = t * glm::vec4(collDir, 1.0);
+        glm::vec4 newDir4 = t * glm::vec4(collDir, 1.0);
+        glm::vec3 newDir = glm::vec3(newDir4.x, newDir4.y, newDir4.z);
         new ParticleEntity(m_position, newDir,
                 &App::app->m_meshes[parType],
                 &App::app->m_shaders[App::SHADER_BASIC],
                 nullptr);
     }
     m_position = m_startPos;
-    m_moveSpeed = App::GetRand(2.5, 4.0);
+    m_moveSpeed = App::GetRand(4.2, 6.2);
 }

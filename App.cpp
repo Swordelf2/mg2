@@ -10,6 +10,7 @@
 #include "graphics/Texture.h"
 #include "graphics/Mesh.h"
 #include "entities/HoverEntity.h"
+#include "entities/Background.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,6 +27,7 @@ App::~App()
     for (Entity *entity : m_entities) {
         delete entity;
     }
+    delete m_background;
 }
 
 int App::Execute()
@@ -81,6 +83,9 @@ void App::Update()
 void App::Render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Background
+    m_background->Draw();
 
     // projection
     glm::mat4 pv = glm::perspective(static_cast<float>(glm::radians(45.0)),
@@ -151,6 +156,10 @@ int App::Init()
 
 void App::InitEntities()
 {
+    m_background = new Background(&m_meshes[MESH_SQUARE],
+            &m_shaders[SHADER_BACKGROUND],
+            &m_textures[TEXTURE_SPACE]);
+
     for (int i = 0; i < 10; ++i) {
         Entity *entity = new HoverEntity(&m_meshes[MESH_TRIANGLE],
                 &m_shaders[SHADER_BASIC],
@@ -197,6 +206,7 @@ void App::InitMeshes()
     };
     m_meshes.emplace_back(vertices, inds);
 
+    // MESH_CUBE
     vertices = {
         {{-0.5f, -0.5f, -0.5f},  {0.0f, 0.0f}},
         {{0.5f, -0.5f, -0.5f},  {1.0f, 0.0f}},
@@ -242,6 +252,7 @@ void App::InitMeshes()
     };
     m_meshes.emplace_back(vertices, emptyInds);
 
+    // MESH_TETR
     vertices = {
         // face 0
         {{-1.0, -1.0,  1.0}, {0.0, 0.0}},
@@ -266,11 +277,14 @@ void App::InitMeshes()
 void App::InitShaders()
 {
     m_shaders.emplace_back("graphics/shaders/basic.vert", "graphics/shaders/basic.frag");
+    m_shaders.emplace_back("graphics/shaders/background.vert", "graphics/shaders/textured.frag");
 }
 
 void App::InitTextures()
 {
     m_textures.emplace_back("res/purple.jpg");
+    m_textures.emplace_back("res/space.jpg");
+    m_textures.emplace_back("res/rainbow.jpg");
 }
 
 double App::GetRand(double l, double r)

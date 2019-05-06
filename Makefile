@@ -11,6 +11,7 @@ OBJS=main.o \
 	 graphics/Entity.o \
 	 entities/RotateEntity.o \
 	 entities/HoverEntity.o \
+	 entities/Background.o \
 
 TARGET=main
 

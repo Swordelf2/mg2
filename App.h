@@ -8,6 +8,7 @@
 #include "graphics/Mesh.h"
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
+#include "entities/Background.h"
 
 #define M_PI           3.14159265358979323846
 
@@ -43,6 +44,7 @@ private:
     double                                       m_deltaTime;
 
     // Entities
+    Background *                                 m_background;
     std::vector<Entity *>                        m_entities;
     void InitEntities();
 
@@ -50,21 +52,25 @@ private:
     enum {
         MESH_TRIANGLE = 0,
         MESH_SQUARE,
-        MESH_CUBE
+        MESH_CUBE,
+        MESH_TETR
     };
     std::vector<Mesh>                            m_meshes;
     void InitMeshes();
 
     // Shaders
     enum {
-        SHADER_BASIC = 0
+        SHADER_BASIC = 0,
+        SHADER_BACKGROUND
     };
     std::vector<Shader>                          m_shaders;
     void InitShaders();
 
     // Textures
     enum {
-        TEXTURE_PURPLE = 0
+        TEXTURE_PURPLE = 0,
+        TEXTURE_SPACE
+        TEXTURE_RAINBOW
     };
     std::vector<Texture>                         m_textures;
     void InitTextures();

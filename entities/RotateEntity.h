@@ -12,7 +12,7 @@ public:
 
     virtual void Update();
 
-private:
+protected:
     double                                       m_rotSpeed;
 };
 

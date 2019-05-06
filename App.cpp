@@ -10,7 +10,9 @@
 #include "graphics/Texture.h"
 #include "graphics/Mesh.h"
 #include "entities/HoverEntity.h"
-#include "entities/Background.h"
+#include "entities/CollideEntity.h"
+
+#include "entities/ParticleEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,14 +22,11 @@
 #include <ctime>
 
 
-const App * App::app;
+App * App::app;
 
 App::~App()
 {
-    for (Entity *entity : m_entities) {
-        delete entity;
-    }
-    delete m_background;
+    ClearEntities();
 }
 
 int App::Execute()
@@ -69,6 +68,8 @@ double App::GetTime() const
 
 void App::Update()
 {
+    glfwPollEvents();
+
     /* Update deltatime */
     m_prevTime = m_time;
     m_time = glfwGetTime();
@@ -77,7 +78,27 @@ void App::Update()
     for (Entity *entity : m_entities) {
         entity->Update();
     }
-    glfwPollEvents();
+
+    if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS && m_curScene != 1) {
+        InitScene1();
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_2) == GLFW_PRESS && m_curScene != 2) {
+        InitScene2();
+    }
+    if (m_curScene == 2) {
+        for (auto it = m_particles.begin(); it != m_particles.end(); ++it) {
+            ParticleEntity * &entity = *it;
+            entity->Update();
+            glm::vec3 pos = entity->GetPosition();
+            if (pos.x >= 16.0 || pos.x <= -16.0 || pos.y >= 16.0 || pos.y <= -16.0) {
+                it = m_particles.erase(it);
+            }
+        }
+
+        std::cout << m_particles.size() << std::endl;
+
+        // TODO move on W and S
+    }
 }
 
 void App::Render()
@@ -85,7 +106,9 @@ void App::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Background
-    m_background->Draw();
+    if (m_background) {
+        m_background->Draw();
+    }
 
     // projection
     glm::mat4 pv = glm::perspective(static_cast<float>(glm::radians(45.0)),
@@ -97,6 +120,12 @@ void App::Render()
 
     for (Entity *entity : m_entities) {
         entity->Draw(pv);
+    }
+
+    if (m_curScene == 2) {
+        for (Entity *entity : m_particles) {
+            entity->Draw(pv);
+        }
     }
 
     glfwSwapBuffers(m_window);
@@ -149,35 +178,75 @@ int App::Init()
     InitShaders();
     InitTextures();
 
-    InitEntities();
+    InitScene1();
 
     return 0;
 }
 
-void App::InitEntities()
+void App::ClearEntities()
 {
+    for (Entity *entity : m_entities) {
+        delete entity;
+    }
+    m_entities.clear();
+    for (ParticleEntity *entity : m_particles) {
+        delete entity;
+    }
+    m_particles.clear();
+    if (m_background) {
+        delete m_background;
+        m_background = nullptr;
+    }
+}
+void App::InitScene1()
+{
+    ClearEntities();
+    m_curScene = 1;
     m_background = new Background(&m_meshes[MESH_SQUARE],
             &m_shaders[SHADER_BACKGROUND],
             &m_textures[TEXTURE_SPACE]);
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 13; ++i) {
         Entity *entity = new HoverEntity(&m_meshes[MESH_TRIANGLE],
                 &m_shaders[SHADER_BASIC],
                 nullptr);
         m_entities.push_back(entity);
     }
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 13; ++i) {
         Entity *entity = new HoverEntity(&m_meshes[MESH_CUBE],
                 &m_shaders[SHADER_BASIC],
                 nullptr);
-        m_entities.push_back(entity);
+         m_entities.push_back(entity);
     }
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 13; ++i) {
         Entity *entity = new HoverEntity(&m_meshes[MESH_SQUARE],
                 &m_shaders[SHADER_BASIC],
                 nullptr);
         m_entities.push_back(entity);
     }
+}
+
+void App::InitScene2()
+{
+    ClearEntities();
+    m_curScene = 2;
+    for (int i = -10; i < 10; ++i) {
+        Entity *entity = new CollideEntity(glm::vec3(GetRand(13.5, 16.0), i / 2.0, 0.0),
+                glm::vec3(-1.0, 0.0, 0.0),
+                &m_meshes[MESH_CUBE + rand() % 2],
+                &m_shaders[SHADER_TEXTURED],
+                &m_textures[TEXTURE_RAINBOW]);
+        m_entities.push_back(entity);
+    }
+    for (int i = -10; i < 10; ++i) {
+        Entity *entity = new CollideEntity(glm::vec3(-GetRand(13.5, 16.0), i / 2.0, 0.0),
+                glm::vec3(1.0, 0.0, 0.0),
+                &m_meshes[MESH_CUBE + rand() % 2],
+                &m_shaders[SHADER_TEXTURED],
+                &m_textures[TEXTURE_RAINBOW]);
+        m_entities.push_back(entity);
+    }
+
 }
 
 void App::InitMeshes()
@@ -252,6 +321,7 @@ void App::InitMeshes()
     };
     m_meshes.emplace_back(vertices, emptyInds);
 
+/*
     // MESH_TETR
     vertices = {
         // face 0
@@ -271,13 +341,17 @@ void App::InitMeshes()
         {{-1.0, -1.0,  1.0}, {1.0, 0.0}},
         {{ 0.0, -1.0, -1.0}, {0.5, 1.0}}
     };
-    m_meshes.emplace_back(vertices, emptyInds);
+    */
+    auto p = ReadMesh("res/tetr.mesh");
+    m_meshes.emplace_back(p.first, p.second);
 }
 
 void App::InitShaders()
 {
     m_shaders.emplace_back("graphics/shaders/basic.vert", "graphics/shaders/basic.frag");
     m_shaders.emplace_back("graphics/shaders/background.vert", "graphics/shaders/textured.frag");
+    m_shaders.emplace_back("graphics/shaders/textured.vert", "graphics/shaders/textured.frag");
+    m_shaders[2].SetUniform("texture0", 0);
 }
 
 void App::InitTextures()

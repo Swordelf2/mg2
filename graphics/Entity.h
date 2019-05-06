@@ -17,6 +17,7 @@ public:
     virtual void Draw(const glm::mat4 &pv) const;
 
     void SetScale(const glm::vec3 &scale);
+    glm::vec3 GetPosition() const;
 
 protected:
     float                                           m_angle = 0.0;

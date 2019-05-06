@@ -36,3 +36,8 @@ void Entity::SetScale(const glm::vec3 &scale)
 {
     m_scale = scale;
 }
+
+glm::vec3 Entity::GetPosition() const
+{
+    return m_position;
+}

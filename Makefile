@@ -5,6 +5,7 @@ LFLAGS=-lGL -lglfw -lGLEW -lpthread
 
 OBJS=main.o \
 	 App.o \
+	 ReadMesh.o \
 	 graphics/Shader.o \
 	 graphics/Texture.o \
 	 graphics/Mesh.o \
@@ -12,6 +13,8 @@ OBJS=main.o \
 	 entities/RotateEntity.o \
 	 entities/HoverEntity.o \
 	 entities/Background.o \
+	 entities/CollideEntity.o \
+	 entities/ParticleEntity.o \
 
 TARGET=main
 

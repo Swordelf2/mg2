@@ -41,3 +41,13 @@ glm::vec3 Entity::GetPosition() const
 {
     return m_position;
 }
+
+Mesh *Entity::GetMesh() const
+{
+    return m_mesh;
+}
+
+void Entity::Move(glm::vec3 moveVec)
+{
+    m_position += moveVec;
+}

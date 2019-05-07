@@ -28,7 +28,7 @@ void CollideEntity::Update()
             continue;
         }
         glm::vec3 diff = entity->GetPosition() - m_position;
-        if (diff.x * diff.x + diff.y * diff.y <= 0.01) {
+        if (diff.x * diff.x + diff.y * diff.y <= 0.09) {
             glm::vec3 myPos = m_position;
             Collide(entity->GetPosition());
             dynamic_cast<CollideEntity *>(entity)->Collide(myPos);

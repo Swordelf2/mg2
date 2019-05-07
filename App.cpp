@@ -79,10 +79,10 @@ void App::Update()
         entity->Update();
     }
 
-    if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS && m_curScene != 1) {
+    if (m_input[INPUT_1] && m_curScene != 1) {
         InitScene1();
     }
-    if (glfwGetKey(m_window, GLFW_KEY_2) == GLFW_PRESS && m_curScene != 2) {
+    if (m_input[INPUT_2] && m_curScene != 2) {
         InitScene2();
     }
     if (m_curScene == 2) {
@@ -95,9 +95,22 @@ void App::Update()
             }
         }
 
-        std::cout << m_particles.size() << std::endl;
-
-        // TODO move on W and S
+        if (m_input[INPUT_W]) {
+            for (Entity *entity : m_entities) {
+                if (entity->GetMesh() == &m_meshes[MESH_CUBE]) {
+                    entity->Move(glm::vec3(0.0, 1.5, 0.0) *
+                            static_cast<float>(GetDeltaTime() * 2.0));
+                }
+            }
+        }
+        if (m_input[INPUT_S]) {
+            for (Entity *entity : m_entities) {
+                if (entity->GetMesh() == &m_meshes[MESH_CUBE]) {
+                    entity->Move(glm::vec3(0.0, -1.5, 0.0) *
+                            static_cast<float>(GetDeltaTime() * 2.0));
+                }
+            }
+        }
     }
 }
 
@@ -139,8 +152,8 @@ int App::Init()
     if (!glfwInit())
         return -1;
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
@@ -166,8 +179,11 @@ int App::Init()
     std::cout << ver << std::endl;
 
     // Set the debug callback function
+    // TODO: DISABLE THIS FOR RELEASE
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(App::debugCallback, nullptr);
+
+    glfwSetKeyCallback(m_window, App::KeyCallback);
 
     m_time = m_prevTime = glfwGetTime();
     m_deltaTime = 0.0;
@@ -366,6 +382,33 @@ double App::GetRand(double l, double r)
     double d = rand() / (RAND_MAX + 1.0);
     return l + (r - l) * d;
 }
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void App::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    int input_ind = -1;
+    switch (key) {
+        case GLFW_KEY_1:
+            input_ind = INPUT_1;
+            break;
+        case GLFW_KEY_2:
+            input_ind = INPUT_2;
+            break;
+        case GLFW_KEY_3:
+            input_ind = INPUT_3;
+            break;
+        case GLFW_KEY_W:
+            input_ind = INPUT_W;
+            break;
+        case GLFW_KEY_S:
+            input_ind = INPUT_S;
+            break;
+    }
+    if (input_ind != -1) {
+        App::app->m_input[input_ind] = (action != GLFW_RELEASE);
+    }
+}
+#pragma GCC diagnostic pop
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void App::debugCallback(GLenum source,

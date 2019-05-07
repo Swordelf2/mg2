@@ -66,6 +66,17 @@ public:
     std::vector<Texture>                         m_textures;
     void InitTextures();
 
+    // Input
+    enum {
+        INPUT_1 = 0,
+        INPUT_2,
+        INPUT_3,
+        INPUT_W,
+        INPUT_S,
+        INPUT_LAST
+    };
+    bool                                         m_input[INPUT_LAST] = {false};
+
 public:
     static double GetRand(double l, double r); // generated random value in [l, r)
 
@@ -91,6 +102,8 @@ private:
     double                                       m_deltaTime;
 
 
+    /* Input */
+    static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     /* Debug */
     static void APIENTRY debugCallback(GLenum source,

@@ -16,8 +16,10 @@ public:
     virtual void Update();
     virtual void Draw(const glm::mat4 &pv) const;
 
+    void Move(glm::vec3 moveVec);
     void SetScale(const glm::vec3 &scale);
     glm::vec3 GetPosition() const;
+    Mesh *GetMesh() const;
 
 protected:
     float                                           m_angle = 0.0;

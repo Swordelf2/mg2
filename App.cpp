@@ -297,7 +297,7 @@ void App::InitScene3()
 
     // Mirrored entities
     unsigned cnt = 12;
-    for (int i = 0; i < cnt; ++i) {
+    for (unsigned i = 0; i < cnt; ++i) {
         Entity * entity = new MirroredEntity(2.0 * M_PI * static_cast<float>(i) / cnt,
                 (i % 2 ? 1 : -1),
                 &m_meshes[MESH_CUBE],

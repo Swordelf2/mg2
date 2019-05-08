@@ -15,6 +15,8 @@ OBJS=main.o \
 	 entities/Background.o \
 	 entities/CollideEntity.o \
 	 entities/ParticleEntity.o \
+	 entities/MirrorEntity.o \
+	 entities/MirroredEntity.o \
 
 TARGET=main
 

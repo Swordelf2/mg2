@@ -9,6 +9,7 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 #include "entities/Background.h"
+#include "entities/MirrorEntity.h"
 
 
 #include <list>
@@ -33,8 +34,11 @@ public:
 public:
     static App *                           app;
 
+    glm::vec3                                    m_viewPos;
+
     // Entities
     Background *                                 m_background = nullptr;
+    MirrorEntity *                               m_mirror = nullptr;
     std::vector<Entity *>                        m_entities;
     std::list<ParticleEntity *>                  m_particles;
 
@@ -59,9 +63,9 @@ public:
 
     // Textures
     enum {
-        TEXTURE_PURPLE = 0,
         TEXTURE_SPACE,
-        TEXTURE_RAINBOW
+        TEXTURE_RAINBOW,
+        TEXTURE_COLORFUL
     };
     std::vector<Texture>                         m_textures;
     void InitTextures();

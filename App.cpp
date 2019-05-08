@@ -11,6 +11,7 @@
 #include "graphics/Mesh.h"
 #include "entities/HoverEntity.h"
 #include "entities/CollideEntity.h"
+#include "entities/MirroredEntity.h"
 
 #include "entities/ParticleEntity.h"
 
@@ -85,6 +86,9 @@ void App::Update()
     if (m_input[INPUT_2] && m_curScene != 2) {
         InitScene2();
     }
+    if (m_input[INPUT_3] && m_curScene != 3) {
+        InitScene3();
+    }
     if (m_curScene == 2) {
         for (auto it = m_particles.begin(); it != m_particles.end(); ++it) {
             ParticleEntity * &entity = *it;
@@ -129,7 +133,7 @@ void App::Render()
             0.1f, 100.0f);
 
     // view
-    pv = glm::translate(pv, glm::vec3(0.0, 0.0, -15.0));
+    pv = glm::translate(pv, -m_viewPos);
 
     for (Entity *entity : m_entities) {
         entity->Draw(pv);
@@ -139,6 +143,11 @@ void App::Render()
         for (Entity *entity : m_particles) {
             entity->Draw(pv);
         }
+    }
+
+    // Mirror
+    if (m_mirror) {
+        m_mirror->Draw(pv);
     }
 
     glfwSwapBuffers(m_window);
@@ -213,11 +222,18 @@ void App::ClearEntities()
         delete m_background;
         m_background = nullptr;
     }
+    if (m_mirror) {
+        delete m_mirror;
+        m_mirror = nullptr;
+    }
 }
+
 void App::InitScene1()
 {
     ClearEntities();
     m_curScene = 1;
+    m_viewPos = {0.0, 0.0, 15.0};
+
     m_background = new Background(&m_meshes[MESH_SQUARE],
             &m_shaders[SHADER_BACKGROUND],
             &m_textures[TEXTURE_SPACE]);
@@ -246,6 +262,8 @@ void App::InitScene2()
 {
     ClearEntities();
     m_curScene = 2;
+    m_viewPos = {0.0, 0.0, 15.0};
+
     for (int i = -10; i < 10; ++i) {
         Entity *entity = new CollideEntity(glm::vec3(GetRand(13.5, 16.0), i / 2.0, 0.0),
                 glm::vec3(-1.0, 0.0, 0.0),
@@ -263,6 +281,30 @@ void App::InitScene2()
         m_entities.push_back(entity);
     }
 
+}
+
+void App::InitScene3()
+{
+    ClearEntities();
+    m_curScene = 3;
+    m_viewPos = {0.0, 0.5, 10.5};
+
+    // Mirror
+    m_mirror = new MirrorEntity(
+            &m_meshes[MESH_SQUARE],
+            &m_shaders[SHADER_BASIC],
+            nullptr);
+
+    // Mirrored entities
+    unsigned cnt = 12;
+    for (int i = 0; i < cnt; ++i) {
+        Entity * entity = new MirroredEntity(2.0 * M_PI * static_cast<float>(i) / cnt,
+                (i % 2 ? 1 : -1),
+                &m_meshes[MESH_CUBE],
+                &m_shaders[SHADER_TEXTURED],
+                &m_textures[TEXTURE_COLORFUL]);
+        m_entities.push_back(entity);
+    }
 }
 
 void App::InitMeshes()
@@ -372,9 +414,9 @@ void App::InitShaders()
 
 void App::InitTextures()
 {
-    m_textures.emplace_back("res/purple.jpg");
     m_textures.emplace_back("res/space.jpg");
     m_textures.emplace_back("res/rainbow.jpg");
+    m_textures.emplace_back("res/colorful.jpg");
 }
 
 double App::GetRand(double l, double r)

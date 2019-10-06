@@ -89,6 +89,9 @@ void App::Update()
     if (m_input[INPUT_3] && m_curScene != 3) {
         InitScene3();
     }
+    if (m_input[INPUT_4] && m_curScene != 4) {
+        InitScene4();
+    }
     if (m_curScene == 2) {
         for (auto it = m_particles.begin(); it != m_particles.end(); ++it) {
             ParticleEntity * &entity = *it;
@@ -113,6 +116,19 @@ void App::Update()
                     entity->Move(glm::vec3(0.0, -1.5, 0.0) *
                             static_cast<float>(GetDeltaTime() * 2.0));
                 }
+            }
+        }
+    } else if (m_curScene == 4) {
+        if (m_input[INPUT_W]) {
+            for (Entity *entity : m_entities) {
+                entity->Move(glm::vec3(0.0, 1.5, 0.0) *
+                        static_cast<float>(GetDeltaTime() * 15.0));
+            }
+        }
+        if (m_input[INPUT_S]) {
+            for (Entity *entity : m_entities) {
+                entity->Move(glm::vec3(0.0, -1.5, 0.0) *
+                        static_cast<float>(GetDeltaTime() * 15.0));
             }
         }
     }
@@ -155,6 +171,7 @@ void App::Render()
 
 int App::Init()
 {
+
     srand(time(nullptr));
 
     /* Initialize the library */
@@ -198,6 +215,10 @@ int App::Init()
     m_deltaTime = 0.0;
 
     app = this;
+
+#ifndef VSYNC
+    glfwSwapInterval(0);
+#endif
 
     InitMeshes();
     InitShaders();
@@ -305,6 +326,20 @@ void App::InitScene3()
                 &m_textures[TEXTURE_COLORFUL]);
         m_entities.push_back(entity);
     }
+}
+
+void App::InitScene4()
+{
+    ClearEntities();
+    m_curScene = 4;
+    m_viewPos = {0.0, 0.5, 10.5};
+
+    Entity *object = new RotateEntity(0, glm::vec3(1.0, 0.0, 0.0),
+            &m_meshes[MESH_SQUARE],
+            &m_shaders[SHADER_BASIC],
+            nullptr);
+
+    m_entities.push_back(object);
 }
 
 void App::InitMeshes()
@@ -438,6 +473,9 @@ void App::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int
             break;
         case GLFW_KEY_3:
             input_ind = INPUT_3;
+            break;
+        case GLFW_KEY_4:
+            input_ind = INPUT_4;
             break;
         case GLFW_KEY_W:
             input_ind = INPUT_W;

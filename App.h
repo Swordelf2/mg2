@@ -75,6 +75,7 @@ public:
         INPUT_1 = 0,
         INPUT_2,
         INPUT_3,
+        INPUT_4,
         INPUT_W,
         INPUT_S,
         INPUT_LAST
@@ -93,6 +94,7 @@ private:
     void InitScene1();
     void InitScene2();
     void InitScene3();
+    void InitScene4();
 
 private:
     int                                          m_screenWidth;
